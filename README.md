@@ -53,14 +53,6 @@ La logique est explicite, traçable et rapide. Pas d'appels API, pas de latence,
 
 La limite : ça gère mal la nuance. Une hypothèse peut porter plusieurs types de risques à la fois. Une version future pourrait pondérer plusieurs dimensions plutôt que de forcer un choix unique.
 
-## Ce que j'améliorerais
-
-- [ ] Permettre la sélection multiple sur le type de risque (la plupart des hypothèses en portent 2+)
-- [ ] Ajouter une dimension "temps disponible" (1 jour vs 1 sprint change tout)
-- [ ] Sauvegarder et comparer les hypothèses sur un cycle de discovery
-- [ ] Exporter la recommandation en one-pager à partager avec l'équipe
-- [ ] Enrichir la matrice à partir de vraies décisions PM
-
 ## Stack
 
 HTML / CSS / JS pur. Aucune dépendance, aucune étape de build, aucun framework.
