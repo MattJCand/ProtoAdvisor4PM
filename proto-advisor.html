@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Proto Advisor</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,wght@0,300;0,700;1,300&display=swap');
+
+  :root {
+    --bg: #0e0e0e;
+    --surface: #161616;
+    --border: #2a2a2a;
+    --accent: #c8f135;
+    --accent-dim: #8aaa1f;
+    --text: #e8e8e8;
+    --muted: #666;
+    --danger: #ff6b4a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 60px 20px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 56px;
+  }
+
+  header h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: clamp(2.4rem, 5vw, 3.6rem);
+    letter-spacing: -1px;
+    line-height: 1.1;
+  }
+
+  header h1 span {
+    color: var(--accent);
+    font-style: italic;
+  }
+
+  header p {
+    margin-top: 12px;
+    color: var(--muted);
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 36px;
+    width: 100%;
+    max-width: 620px;
+    margin-bottom: 16px;
+  }
+
+  .step-label {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+
+  .question {
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    font-size: 1.3rem;
+    margin-bottom: 24px;
+    line-height: 1.4;
+  }
+
+  textarea {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.88rem;
+    padding: 16px;
+    resize: none;
+    min-height: 100px;
+    outline: none;
+    transition: border-color 0.2s;
+    line-height: 1.6;
+  }
+
+  textarea:focus {
+    border-color: var(--accent);
+  }
+
+  textarea::placeholder { color: var(--muted); }
+
+  .options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .option-btn {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+    padding: 14px 16px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.15s;
+    line-height: 1.4;
+  }
+
+  .option-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .option-btn.selected {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #0e0e0e;
+    font-weight: 500;
+  }
+
+  .option-icon {
+    display: block;
+    font-size: 1.1rem;
+    margin-bottom: 6px;
+  }
+
+  .next-btn {
+    margin-top: 24px;
+    background: var(--accent);
+    border: none;
+    border-radius: 2px;
+    color: #0e0e0e;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.82rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 14px 28px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    width: 100%;
+  }
+
+  .next-btn:hover { opacity: 0.85; }
+  .next-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  .result-card {
+    background: var(--surface);
+    border: 1px solid var(--accent);
+    border-radius: 2px;
+    padding: 36px;
+    width: 100%;
+    max-width: 620px;
+    display: none;
+  }
+
+  .result-card.visible { display: block; }
+
+  .result-proto {
+    font-family: 'Fraunces', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+
+  .result-tag {
+    display: inline-block;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    background: #1e2e00;
+    color: var(--accent);
+    padding: 4px 10px;
+    border-radius: 2px;
+    margin-bottom: 20px;
+  }
+
+  .result-why {
+    color: #aaa;
+    font-size: 0.85rem;
+    line-height: 1.7;
+    margin-bottom: 24px;
+  }
+
+  .result-steps {
+    border-top: 1px solid var(--border);
+    padding-top: 20px;
+  }
+
+  .result-steps-label {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+
+  .step-item {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 12px;
+    font-size: 0.82rem;
+    color: #bbb;
+    line-height: 1.5;
+  }
+
+  .step-num {
+    color: var(--accent);
+    min-width: 20px;
+  }
+
+  .reset-btn {
+    margin-top: 28px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 12px 20px;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.15s;
+  }
+
+  .reset-btn:hover {
+    border-color: var(--text);
+    color: var(--text);
+  }
+
+  .progress {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 32px;
+  }
+
+  .progress-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--border);
+    transition: background 0.3s;
+  }
+
+  .progress-dot.active { background: var(--accent); }
+
+  .hidden { display: none; }
+
+  .fade-in {
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Proto<span>Advisor</span></h1>
+  <p>Choisir le bon prototype en 3 questions</p>
+</header>
+
+<div class="progress">
+  <div class="progress-dot active" id="dot0"></div>
+  <div class="progress-dot" id="dot1"></div>
+  <div class="progress-dot" id="dot2"></div>
+  <div class="progress-dot" id="dot3"></div>
+</div>
+
+<!-- Step 0: Hypothèse -->
+<div class="card fade-in" id="step0">
+  <div class="step-label">Étape 1 / 3</div>
+  <div class="question">Quelle est ton hypothèse à valider ?</div>
+  <textarea id="hypothesis" placeholder="Ex: Les managers paieraient pour un dashboard de suivi en temps réel de leurs techniciens..."></textarea>
+  <button class="next-btn" id="btn0" onclick="goTo(1)" disabled>Continuer →</button>
+</div>
+
+<!-- Step 1: Risque principal -->
+<div class="card hidden" id="step1">
+  <div class="step-label">Étape 2 / 3</div>
+  <div class="question">Quel est le risque principal de cette hypothèse ?</div>
+  <div class="options">
+    <button class="option-btn" onclick="select(this, 'risk', 'desirability')">
+      <span class="option-icon">💡</span>
+      Désirabilité<br><span style="color:var(--muted);font-size:0.75rem">Les gens en veulent-ils vraiment ?</span>
+    </button>
+    <button class="option-btn" onclick="select(this, 'risk', 'feasibility')">
+      <span class="option-icon">⚙️</span>
+      Faisabilité<br><span style="color:var(--muted);font-size:0.75rem">Peut-on le construire ?</span>
+    </button>
+    <button class="option-btn" onclick="select(this, 'risk', 'viability')">
+      <span class="option-icon">📊</span>
+      Viabilité<br><span style="color:var(--muted);font-size:0.75rem">Est-ce rentable business ?</span>
+    </button>
+    <button class="option-btn" onclick="select(this, 'risk', 'usability')">
+      <span class="option-icon">🎯</span>
+      Utilisabilité<br><span style="color:var(--muted);font-size:0.75rem">Sauront-ils s'en servir ?</span>
+    </button>
+  </div>
+  <button class="next-btn" id="btn1" onclick="goTo(2)" disabled>Continuer →</button>
+</div>
+
+<!-- Step 2: Besoin de validation -->
+<div class="card hidden" id="step2">
+  <div class="step-label">Étape 3 / 3</div>
+  <div class="question">De quoi as-tu besoin pour valider ?</div>
+  <div class="options">
+    <button class="option-btn" onclick="select(this, 'need', 'behavior')">
+      <span class="option-icon">🖱️</span>
+      Un comportement réel<br><span style="color:var(--muted);font-size:0.75rem">Clic, achat, signup...</span>
+    </button>
+    <button class="option-btn" onclick="select(this, 'need', 'qualitative')">
+      <span class="option-icon">💬</span>
+      Un retour qualitatif<br><span style="color:var(--muted);font-size:0.75rem">Avis, perception, usage...</span>
+    </button>
+    <button class="option-btn" onclick="select(this, 'need', 'technical')">
+      <span class="option-icon">🔬</span>
+      Une preuve technique<br><span style="color:var(--muted);font-size:0.75rem">Intégration, perf, faisabilité...</span>
+    </button>
+    <button class="option-btn" onclick="select(this, 'need', 'intent')">
+      <span class="option-icon">💰</span>
+      Une intention d'achat<br><span style="color:var(--muted);font-size:0.75rem">Willingness to pay...</span>
+    </button>
+  </div>
+  <button class="next-btn" id="btn2" onclick="showResult()" disabled>Voir ma recommandation →</button>
+</div>
+
+<!-- Result -->
+<div class="result-card" id="result">
+  <div class="step-label">Recommandation</div>
+  <div class="result-proto" id="result-proto"></div>
+  <div class="result-tag" id="result-tag"></div>
+  <div class="result-why" id="result-why"></div>
+  <div class="result-steps">
+    <div class="result-steps-label">Prochaines étapes</div>
+    <div id="result-steps-list"></div>
+  </div>
+  <button class="reset-btn" onclick="reset()">← Recommencer avec une nouvelle hypothèse</button>
+</div>
+
+<script>
+  const answers = { risk: null, need: null };
+
+  const matrix = {
+    desirability: {
+      behavior: {
+        proto: "Landing Page",
+        tag: "Désirabilité · Comportement",
+        why: "Tu veux savoir si les gens cliquent, s'inscrivent, agissent. Une landing page avec un CTA clair te donnera des données réelles en 24-48h sans construire quoi que ce soit.",
+        steps: [
+          "Rédige une promesse claire en une ligne",
+          "Crée la landing avec un CTA (bouton, formulaire)",
+          "Drive du trafic dessus (5-10 personnes de ta cible)",
+          "Mesure le taux de clic / signup"
+        ]
+      },
+      qualitative: {
+        proto: "Script d'interview",
+        tag: "Désirabilité · Qualitatif",
+        why: "Avant de construire quoi que ce soit, parle à 5 personnes. Un bon script d'interview te révélera si le problème est réel et si ta solution résonne — sans écrire une ligne de code.",
+        steps: [
+          "Prépare 5-7 questions ouvertes sur le problème (pas la solution)",
+          "Recrute 5 personnes de ta cible exacte",
+          "Conduis les interviews en 30 min chacune",
+          "Cherche les patterns récurrents dans les réponses"
+        ]
+      },
+      technical: {
+        proto: "Wizard of Oz",
+        tag: "Désirabilité · Preuve tech",
+        why: "Simule le système manuellement derrière une interface simple. L'utilisateur pense que c'est automatisé, toi tu fais tout à la main. Tu valides la désirabilité avant d'investir en dev.",
+        steps: [
+          "Construis une interface minimaliste (Figma, no-code)",
+          "Effectue les actions 'automatiques' manuellement en coulisses",
+          "Observe comment les utilisateurs interagissent",
+          "Décide si ça vaut la peine d'automatiser"
+        ]
+      },
+      intent: {
+        proto: "Fake Door",
+        tag: "Désirabilité · Intention",
+        why: "Ajoute un bouton ou une option qui n'existe pas encore dans ton produit. Mesure combien de gens cliquent dessus. C'est le signal d'intent le plus honnête qui soit.",
+        steps: [
+          "Identifie où placer le 'fake door' dans ton produit actuel",
+          "Ajoute le bouton / lien avec un message 'Bientôt disponible'",
+          "Mesure le taux de clic sur 1-2 semaines",
+          "Analyse qui clique (segment, usage...)"
+        ]
+      }
+    },
+    feasibility: {
+      behavior: {
+        proto: "Spike technique",
+        tag: "Faisabilité · Comportement",
+        why: "Code un prototype jetable focalisé sur la partie la plus risquée techniquement. Pas besoin de UI, pas besoin d'être propre — juste prouver que ça marche.",
+        steps: [
+          "Identifie le risque technique le plus critique",
+          "Code le minimum pour tester ce point précis",
+          "Fixe un timebox strict (1-3 jours max)",
+          "Documente ce que tu as appris, pas ce que tu as construit"
+        ]
+      },
+      qualitative: {
+        proto: "Discussion technique",
+        tag: "Faisabilité · Qualitatif",
+        why: "Avant de coder, parle aux ingénieurs ou experts du domaine. Une conversation de 30 minutes peut t'éviter des semaines de développement dans le mauvais sens.",
+        steps: [
+          "Prépare tes questions techniques précises",
+          "Implique 1-2 devs ou experts dès maintenant",
+          "Cartographie les dépendances et blockers potentiels",
+          "Décide d'un go / no-go avant de commencer"
+        ]
+      },
+      technical: {
+        proto: "POC (Proof of Concept)",
+        tag: "Faisabilité · Preuve tech",
+        why: "Un POC ciblé sur le point le plus incertain techniquement. L'objectif n'est pas d'avoir quelque chose de beau — c'est de répondre à 'est-ce qu'on peut le faire ?'",
+        steps: [
+          "Définis la question technique exacte à répondre",
+          "Construis le POC le plus minimal possible",
+          "Teste en conditions proches du réel",
+          "Documente les limites et les risques restants"
+        ]
+      },
+      intent: {
+        proto: "Chiffrage rapide",
+        tag: "Faisabilité · Intention",
+        why: "Estime le coût de construction avant de valider la demande. Parfois le vrai risque c'est que le coût de build dépasse ce que les clients paieraient.",
+        steps: [
+          "Fais une estimation rough du coût de dev (T-shirt sizing)",
+          "Compare avec le revenu potentiel réaliste",
+          "Identifie les hypothèses critiques dans ton calcul",
+          "Valide les hypothèses les plus incertaines en premier"
+        ]
+      }
+    },
+    viability: {
+      behavior: {
+        proto: "Wizard of Oz",
+        tag: "Viabilité · Comportement",
+        why: "Teste le modèle économique avant de construire l'infrastructure. Si les gens paient pour un service manuel, ils paieront pour la version automatisée.",
+        steps: [
+          "Définis ton pricing hypothesis",
+          "Crée une offre manuelle à ce prix",
+          "Trouve 3-5 clients potentiels et propose-leur",
+          "Mesure la willingness to pay réelle"
+        ]
+      },
+      qualitative: {
+        proto: "Entretien économique",
+        tag: "Viabilité · Qualitatif",
+        why: "Parle aux décideurs — pas aux utilisateurs. Les questions business (budget, process d'achat, alternatives actuelles) révèlent si ton modèle tient la route.",
+        steps: [
+          "Identifie qui contrôle le budget chez ta cible",
+          "Prépare des questions sur les coûts actuels et le ROI attendu",
+          "Explore le processus de décision d'achat",
+          "Valide ton pricing et ton canal de distribution"
+        ]
+      },
+      technical: {
+        proto: "Business case chiffré",
+        tag: "Viabilité · Preuve tech",
+        why: "Construis un modèle financier simple avec tes hypothèses les plus incertaines. L'objectif est d'identifier les leviers qui font ou cassent la viabilité.",
+        steps: [
+          "Modélise tes hypothèses de revenus et coûts",
+          "Identifie les 2-3 hypothèses les plus sensibles",
+          "Teste ces hypothèses en priorité",
+          "Définis ton seuil de viabilité minimum"
+        ]
+      },
+      intent: {
+        proto: "Landing Page + Pricing",
+        tag: "Viabilité · Intention",
+        why: "Une landing page avec un vrai prix affiché et un bouton 'Acheter' ou 'Réserver' te donnera le signal le plus honnête sur la willingness to pay.",
+        steps: [
+          "Crée une landing avec ta proposition de valeur claire",
+          "Affiche ton prix réel (pas 'contactez-nous')",
+          "Ajoute un CTA d'achat ou de réservation",
+          "Mesure le taux de conversion sur ta cible"
+        ]
+      }
+    },
+    usability: {
+      behavior: {
+        proto: "Test utilisateur sur prototype Figma",
+        tag: "Utilisabilité · Comportement",
+        why: "Crée un prototype cliquable dans Figma et observe des utilisateurs réels naviguer dedans. Tu identifieras les points de friction avant d'écrire une ligne de code.",
+        steps: [
+          "Crée un prototype Figma des écrans principaux",
+          "Définis 2-3 tâches à faire accomplir",
+          "Observe 5 utilisateurs en silence (ne les aide pas)",
+          "Note où ils bloquent, hésitent, ou se trompent"
+        ]
+      },
+      qualitative: {
+        proto: "Test de 5 secondes",
+        tag: "Utilisabilité · Qualitatif",
+        why: "Montre ton interface 5 secondes à quelqu'un. Demande-lui ce qu'il a retenu et ce qu'il ferait. Tu sauras immédiatement si ton UX est clair ou confus.",
+        steps: [
+          "Prépare une capture de ton interface principale",
+          "Montre-la 5 secondes à 5-10 personnes",
+          "Demande : 'C'est quoi ce produit ? Que feriez-vous ?'",
+          "Identifie les incompréhensions récurrentes"
+        ]
+      },
+      technical: {
+        proto: "Prototype interactif no-code",
+        tag: "Utilisabilité · Preuve tech",
+        why: "Construis une version fonctionnelle légère avec des outils no-code. Ça te permettra de tester des interactions réelles sans coût de dev.",
+        steps: [
+          "Choisis ton outil no-code adapté (Bubble, Webflow, Glide...)",
+          "Construis les 2-3 flows critiques uniquement",
+          "Teste avec des utilisateurs réels de ta cible",
+          "Itère rapidement sur les points de friction"
+        ]
+      },
+      intent: {
+        proto: "Test de tri de cartes",
+        tag: "Utilisabilité · Intention",
+        why: "Fais trier des cartes représentant tes features par des utilisateurs. Tu découvriras leur modèle mental — essentiel avant de décider de l'architecture de ton produit.",
+        steps: [
+          "Liste tes features / contenus sur des cartes",
+          "Demande à 5 utilisateurs de les regrouper comme ils le sentent",
+          "Compare leurs groupements avec ta logique actuelle",
+          "Restructure ton IA selon leurs modèles mentaux"
+        ]
+      }
+    }
+  };
+
+  document.getElementById('hypothesis').addEventListener('input', function() {
+    document.getElementById('btn0').disabled = this.value.trim().length < 10;
+  });
+
+  function select(btn, type, value) {
+    const parent = btn.parentElement;
+    parent.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    answers[type] = value;
+    const nextBtn = type === 'risk' ? 'btn1' : 'btn2';
+    document.getElementById(nextBtn).disabled = false;
+  }
+
+  function goTo(step) {
+    document.getElementById('step' + (step - 1)).classList.add('hidden');
+    const next = document.getElementById('step' + step);
+    next.classList.remove('hidden');
+    next.classList.add('fade-in');
+    document.getElementById('dot' + step).classList.add('active');
+  }
+
+  function showResult() {
+    document.getElementById('step2').classList.add('hidden');
+    document.getElementById('dot3').classList.add('active');
+
+    const rec = matrix[answers.risk][answers.need];
+    document.getElementById('result-proto').textContent = rec.proto;
+    document.getElementById('result-tag').textContent = rec.tag;
+    document.getElementById('result-why').textContent = rec.why;
+
+    const stepsList = document.getElementById('result-steps-list');
+    stepsList.innerHTML = rec.steps.map((s, i) => `
+      <div class="step-item">
+        <span class="step-num">${String(i + 1).padStart(2, '0')}.</span>
+        <span>${s}</span>
+      </div>
+    `).join('');
+
+    const resultCard = document.getElementById('result');
+    resultCard.classList.add('visible', 'fade-in');
+  }
+
+  function reset() {
+    answers.risk = null;
+    answers.need = null;
+    document.getElementById('hypothesis').value = '';
+    document.getElementById('btn0').disabled = true;
+    document.getElementById('btn1').disabled = true;
+    document.getElementById('btn2').disabled = true;
+    ['step1', 'step2', 'result'].forEach(id => {
+      document.getElementById(id).classList.add('hidden');
+      document.getElementById(id).classList.remove('visible');
+    });
+    document.getElementById('step0').classList.remove('hidden');
+    document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+    document.querySelectorAll('.progress-dot').forEach((d, i) => {
+      d.classList.toggle('active', i === 0);
+    });
+  }
+</script>
+</body>
+</html>
