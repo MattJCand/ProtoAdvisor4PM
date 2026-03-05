@@ -4,6 +4,10 @@
 
 ---
 
+![Version](https://img.shields.io/badge/version-1.0-c8602a) ![Licence](https://img.shields.io/badge/licence-MIT-2a7c6f) ![No deps](https://img.shields.io/badge/dépendances-aucune-gold)
+
+---
+
 ## Le problème
 
 La plupart des PMs perdent du temps à construire le mauvais prototype.
@@ -64,3 +68,11 @@ Ouvre `index.html` dans un navigateur, ça tourne.
 Construit par un PM qui en avait marre de voir des équipes passer deux semaines sur des prototypes qu'une conversation de cinq minutes aurait pu remplacer.
 
 Le meilleur prototype c'est celui qui répond à ta question le plus vite — pas le plus soigné.
+
+---
+
+## 📄 Licence
+
+MIT
+
+
